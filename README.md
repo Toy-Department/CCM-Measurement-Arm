@@ -92,4 +92,8 @@ The firmware enables an Arduino Mega 2560 to read 4 rotary encoders and calculat
 ## License
 MIT
 
+
+
+
+
 **Built with ❤️ for the maker community**
