@@ -1,99 +1,106 @@
-A desktop application for interfacing with 4-axis CCM digitizing arms. This software provides real-time coordinate tracking, advanced geometry analysis, and 3D visualization for reverse engineering and measurement tasks.
+# CCM Measurement Arm
 
-## TL;DR
-Connects to a serial-based digitizing arm (or uses a built-in simulator) to capture 3D points. It calculates geometry (Circles, Planes, Lines, and more) from captured points, visualizes them in 3D, and exports data to CSV. Built with Electron, Node.js, and Three.js.
+A professional desktop application for 4-axis digitizing arms with real-time 3D visualization, advanced geometry analysis, and Arduino-based hardware control.
+
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
+
+## Overview
+
+The CCM Measurement Arm system consists of two main components:
+
+1. **[Desktop Application](App/)** - Electron-based software for data capture and analysis
+2. **[Hardware & Firmware](Hardware_Firmware/)** - Arduino firmware for the digitizing arm
 
 ## Key Features
 
-### 🛠️ Core Functionality
-*   **Real-time Tracking**: Reads joint angles (Theta 1-4) and calculates X, Y, Z coordinates using forward kinematics.
-*   **Point Capture**: Record individual points or stream points continuously with "Live Recording".
-*   **Unit Support**: Toggle instantly between Millimeters (mm) and Inches (in).
-*   **Undo/Redo**: Full history support for point capture and deletion.
+- 🎯 **Real-time 3D Tracking** - Live position updates with forward kinematics
+- 📐 **Geometry Analysis** - Circle, plane, and line fitting with best-fit calculations
+- 🧊 **3D Visualization** - Interactive Three.js viewer with orbit controls
+- 📊 **Live Recording** - Automated point capture at 1-20 Hz
+- � **Tool Library** - Multiple probe tools with offset compensation
+- 💾 **CSV Export** - Export captured points and geometry results
+- ↩️ **Undo/Redo** - Full operation history
+- 🎮 **Simulator Mode** - Test without hardware
 
-### 📐 Geometry Modes
-*   **Manual**: Capture raw 3D points.
-*   **Circle**: Calculate diameter, center point, and circularity from 3+ points.
-*   **Plane**: Calculate flatness and normal vectors from 3+ points.
-*   **Line**: Calculate length and direction from 2+ points.
+## Quick Start
 
-### 🧊 3D Visualization
-*   **Interactive Viewer**: Real-time 3D plotting of captured points and calculated geometries.
-*   **Controls**: Orbit, pan, and zoom to inspect measurements.
-*   **Tools**: "Home" view reset and "Screenshot" capture.
+### Desktop Application
 
-### 🔌 Connectivity & Simulation
-*   **Serial Connection**: Auto-detects and connects to the digitizing arm via USB/Serial.
-*   **Simulator Mode**: Built-in physics simulator to test functionality without hardware.
-    *   Simulates complex shapes: Rectangle, Cylinder, Cone, and Calibration Master.
+```bash
+cd App
+npm install
+npm start
+```
 
-### 💾 Data Management
-*   **Export**: Save captured points and geometry data to CSV.
-*   **Status Log**: Detailed event logging with auto-scrolling and timestamps.
+See [App/README.md](App/README.md) for detailed installation and usage instructions.
+
+### Hardware & Firmware
+
+Upload the Arduino firmware to your Arduino Mega 2560:
+
+1. Open `Hardware_Firmware/Arduino/CCM_Digitizing_Arm_Arduino.ino` in Arduino IDE
+2. Select **Board: Arduino Mega 2560**
+3. Select your serial port
+4. Click **Upload**
+
+See [Hardware_Firmware/docs/README](Hardware_Firmware/docs/README) for complete hardware setup, wiring diagrams, and configuration.
+
+## System Requirements
+
+### Desktop Application
+- **Node.js** v18.0.0 or higher
+- **npm** v9.0.0 or higher
+- **OS**: Windows, macOS, or Linux
+
+### Hardware
+- **Arduino Mega 2560**
+- **4x Quadrature Encoders** (600 PPR recommended)
+- **USB Cable** for serial communication
 
 ## Tech Stack
-*   **Framework**: [Electron](https://www.electronjs.org/) (v33.0.0)
-*   **Runtime**: [Node.js](https://nodejs.org/) (v20.18.0)
-*   **3D Engine**: [Three.js](https://threejs.org/) (v0.160.0)
-*   **Hardware Interface**: [SerialPort](https://serialport.io/) (v12.0.0)
 
-## Installation & Usage
-
-### Prerequisites
-*   Node.js (v18.0.0 or higher)
-*   npm (v9.0.0 or higher)
+- **[Electron](https://www.electronjs.org/)** - Desktop application framework
+- **[Three.js](https://threejs.org/)** - 3D visualization
+- **[SerialPort](https://serialport.io/)** - Hardware communication
+- **[Node.js](https://nodejs.org/)** - Runtime environment
+- **Arduino** - Firmware platform
 
 ## Project Structure
-*   **`main.js`**: Electron main process entry point. Handles window creation and lifecycle.
-*   **`renderer.js`**: Core application logic. Handles UI interactions, serial communication, and geometry calculations.
-*   **`index.html`**: Main UI layout and structure.
-*   **`styles.css`**: Application styling (Dark/Light themes, layout).
-*   **`src/`**:
-    *   `three-viewer.js`: 3D visualization logic.
-    *   `simulator-engine.js`: Virtual arm simulator logic.
-    *   `geometry-engine.js`: Math and geometry calculation algorithms.
-    *   `kinematics.js`: Forward kinematics calculations.
-
-## 🤖 Hardware & Firmware (Arduino)
-
-This project is designed to work with a custom 4-axis articulated digitizing arm powered by an Arduino Mega 2560.
-
-### Firmware Overview
-The firmware enables an Arduino Mega 2560 to read 4 rotary encoders and calculate real-time 3D coordinates (X, Y, Z). Data is transmitted via serial to this PC application.
-
-### Hardware Requirements
-*   **Microcontroller**: Arduino Mega 2560 (Required for 6+ hardware interrupts)
-*   **Encoders**: 4x Incremental Quadrature Encoders (600 PPR recommended)
-*   **Connection**: USB cable
-
-### Arm Configuration (CONFIG B - Articulated Robot Arm)
 
 ```
-        Wrist (Axis 4)
-           |
-           |  Link 4 (<#>mm)
-           o------------o Tip
-          /
-         /  Link 3 (<#>mm)
-        /
-    Elbow (Axis 3)
-       /
-      /  Link 2 (<#>mm)
-     /
- Shoulder (Axis 2)
-    |
-    |  Link 1 (<#>mm)
-    |
-  Base (Axis 1)
-    |
-=========
+CCM-Measurement-Arm/
+├── App/                      # Desktop application
+│   ├── src/                  # Core modules
+│   ├── assets/               # Icons and images
+│   ├── docs/                 # App documentation
+│   └── README.md             # App installation guide
+│
+├── Hardware_Firmware/        # Arduino firmware
+│   ├── docs/                 # Firmware documentation
+│   └── Arduino/              # Firmware source
+│
+├── LICENSE                   # MIT License
+└── README.md                 # This file
 ```
+
+## Documentation
+
+- **[App Documentation](App/README.md)** - Desktop application setup and usage
+- **[Firmware Documentation](Hardware_Firmware/docs/README)** - Complete firmware guide with wiring, commands, and troubleshooting
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit issues and pull requests.
 
 ## License
-MIT
 
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Acknowledgments
 
+Built with ❤️ for the maker and reverse engineering community.
 
+---
 
-**Built with ❤️ for the maker community**
+**Version 1.0.0** | [Report Issues](https://github.com/Toy-Department/CCM-Measurement-Arm/issues)

@@ -1,16 +1,20 @@
-# Dependencies
-node_modules/
-package-lock.json
+# CCM Measurement Arm - Repository
 
-# Build outputs
-dist/
-build/
-out/
-*.exe
-*.dmg
-*.AppImage
-*.deb
-*.rpm
+# App (Electron Desktop Application)
+App/node_modules/
+App/dist/
+App/build/
+App/out/
+App/*.exe
+App/*.dmg
+App/*.AppImage
+App/*.deb
+App/*.rpm
+
+# Hardware/Firmware
+Hardware_Firmware/**/*.hex
+Hardware_Firmware/**/*.elf
+Hardware_Firmware/**/*.bin
 
 # OS files
 .DS_Store
