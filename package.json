@@ -1,0 +1,68 @@
+{
+  "name": "ccm-digitizing-arm",
+  "version": "1.0.0",
+  "description": "Desktop application for 4-axis CCM digitizing arm with advanced geometry analysis",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "build-win": "electron-builder --win",
+    "build-mac": "electron-builder --mac",
+    "build-linux": "electron-builder --linux",
+    "rebuild": "npm rebuild --runtime=electron --target=33.0.0 --disturl=https://electronjs.org/headers --build-from-source"
+  },
+  "keywords": [
+    "digitizing",
+    "arm",
+    "CMM",
+    "Arduino",
+    "kinematics",
+    "reverse-engineering",
+    "3D-scanning",
+    "geometry",
+    "measurement"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "serialport": "^12.0.0",
+    "three": "^0.181.2"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.yourcompany.ccm-digitizing-arm",
+    "productName": "CCM Digitizing Arm",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "renderer.js",
+      "index.html",
+      "styles.css",
+      "src/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.icns",
+      "category": "public.app-category.developer-tools"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png",
+      "category": "Development"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

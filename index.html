@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCM Digitizing Arm v1.0.0</title>
+    <link rel="stylesheet" href="styles.css">
+    <!-- Three.js from CDN - Using r128 for compatibility -->
+</head>
+
+<body>
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="connection-panel">
+            <label for="port-select">Hardware:</label>
+            <select id="port-select" class="port-dropdown">
+                <option value="">Select Port...</option>
+            </select>
+
+            <button id="refresh-ports-btn" class="btn btn-secondary" title="Refresh port list">
+                🔄 Refresh
+            </button>
+
+            <button id="connect-btn" class="btn btn-primary">
+                Connect
+            </button>
+
+            <div class="status-indicator">
+                <span class="status-dot" id="status-dot"></span>
+                <span id="status-text">Disconnected</span>
+            </div>
+        </div>
+
+        <div class="app-status-panel">
+            <span id="app-status-display" class="app-status-text">STOPPED</span>
+        </div>
+
+        <div class="info-panel">
+            <span id="firmware-info"></span>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <div class="main-container">
+        <!-- LEFT PANEL -->
+        <div class="left-panel">
+            <!-- Simulator Settings Panel (Hidden by default) -->
+            <div id="simulator-settings" class="control-section" style="display: none; border: 2px solid #4CAF50;">
+                <h3>Simulator Settings</h3>
+                <div class="control-group">
+                    <label>Shape:</label>
+                    <select id="sim-shape-select" class="form-control" style="width: 100%; margin-bottom: 10px;">
+                        <option value="RECTANGLE">Rectangle</option>
+                        <option value="CYLINDER">Cylinder</option>
+                        <option value="CONE">Cone</option>
+                        <option value="COMPLEX">Calibration Master</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <div class="info-box" style="background: #f0f0f0; padding: 5px; border-radius: 4px;">
+                        <small id="sim-shape-desc">100x50mm Rectangle</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Controls -->
+            <div class="control-section">
+                <h3>System Controls</h3>
+                <div class="button-group-vertical">
+                    <button id="zero-btn" class="btn btn-warning" disabled>
+                        🎯 Zero Encoders
+                    </button>
+                    <div class="button-group-horizontal">
+                        <button id="undo-btn" class="btn btn-secondary" disabled title="Undo last action (Ctrl+Z)">
+                            ↩️ Undo
+                        </button>
+                        <button id="redo-btn" class="btn btn-secondary" disabled title="Redo (Ctrl+Y)">
+                            ↪️ Redo
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geometry Mode Selection -->
+            <div class="control-section">
+                <h3>Geometry Mode</h3>
+                <select id="geometry-mode-select" class="geometry-dropdown">
+                    <option value="MANUAL">Manual Points</option>
+                    <option value="CIRCLE">Circle</option>
+                    <option value="PLANE">Plane</option>
+                    <option value="LINE">Line</option>
+                </select>
+            </div>
+
+            <!-- Circle Controls -->
+            <div id="circle-controls" class="control-section" style="display:none;">
+                <h4>Circle Mode</h4>
+                <div id="temp-points-list" class="temp-points"></div>
+                <div class="button-group-vertical">
+                    <button id="mark-circle-btn" class="btn btn-success" disabled>
+                        📍 Mark Point
+                    </button>
+                    <button id="calc-circle-btn" class="btn btn-primary">
+                        🔢 Calculate Circle
+                    </button>
+                    <button id="clear-temp-points-btn" class="btn btn-danger-outline">
+                        🗑️ Clear Temp
+                    </button>
+                </div>
+            </div>
+
+            <!-- Plane Controls -->
+            <div id="plane-controls" class="control-section" style="display:none;">
+                <h4>Plane Mode</h4>
+                <div id="temp-points-list-plane" class="temp-points"></div>
+                <div class="button-group-vertical">
+                    <button id="mark-plane-btn" class="btn btn-success" disabled>
+                        📍 Mark Point
+                    </button>
+                    <button id="calc-plane-btn" class="btn btn-primary">
+                        🔢 Calculate Plane
+                    </button>
+                </div>
+            </div>
+
+            <!-- Line Controls -->
+            <div id="line-controls" class="control-section" style="display:none;">
+                <h4>Line Mode</h4>
+                <div id="temp-points-list-line" class="temp-points"></div>
+                <div class="button-group-vertical">
+                    <button id="mark-line-btn" class="btn btn-success" disabled>
+                        📍 Mark Point
+                    </button>
+                    <button id="calc-line-btn" class="btn btn-primary">
+                        🔢 Calculate Line
+                    </button>
+                </div>
+            </div>
+
+            <!-- Point Marking -->
+            <div class="control-section">
+                <h3>Mark Current Point</h3>
+                <div class="button-group-vertical">
+                    <button id="mark-boundary-btn" class="btn btn-point" disabled>
+                        🔷 Mark as Boundary
+                    </button>
+                    <button id="mark-hole-btn" class="btn btn-point" disabled>
+                        ⭕ Mark as Hole Center
+                    </button>
+                </div>
+                <div class="point-count">
+                    Points captured: <strong id="point-count">0</strong>
+                </div>
+            </div>
+
+            <!-- Recording Controls -->
+            <div class="control-section">
+                <h3>Recording</h3>
+
+                <div class="recording-card">
+                    <div class="live-recording-controls">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="live-recording-checkbox">
+                            <span>Enable Live Recording</span>
+                        </label>
+
+                        <div class="frequency-control">
+                            <label for="frequency-slider">Frequency:</label>
+                            <input type="range" id="frequency-slider" min="1" max="20" value="5" step="1">
+                            <span id="frequency-value" class="frequency-display">5 Hz</span>
+                        </div>
+
+                        <div class="live-counter">
+                            <span>LIVE points: </span>
+                            <strong id="live-point-count">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="button-group-vertical">
+                        <button id="start-recording-btn" class="btn btn-success" disabled>
+                            ▶️ Live Data
+                        </button>
+                        <button id="pause-recording-btn" class="btn btn-warning" disabled>
+                            ⏸️ Pause
+                        </button>
+                        <button id="stop-recording-btn" class="btn btn-danger" disabled>
+                            ⏹️ Stop Recording
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Tool Selection -->
+            <div class="control-section">
+                <h3>Tool Selection</h3>
+                <select id="tool-select" class="tool-dropdown">
+                    <option value="default">Default Tool (No Offset)</option>
+                </select>
+                <button id="manage-tools-btn" class="btn btn-secondary">
+                    🔧 Manage Tools
+                </button>
+            </div>
+
+            <!-- Export -->
+            <div class="control-section">
+                <h3>Export Data</h3>
+                <div class="button-group-vertical">
+                    <button id="export-csv-btn" class="btn btn-primary" disabled>
+                        💾 Export CSV
+                    </button>
+                    <button id="clear-points-btn" class="btn btn-danger-outline">
+                        🗑️ Clear All Points
+                    </button>
+                </div>
+            </div>
+
+            <!-- Settings (Moved to bottom) -->
+            <div class="control-section">
+                <h3>Settings</h3>
+                <button id="settings-btn" class="btn btn-secondary">
+                    ⚙️ Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- CENTER PANEL -->
+        <div class="center-panel">
+            <!-- Current Position -->
+            <div class="data-section">
+                <h2>Current Position</h2>
+                <div class="position-grid">
+                    <div class="position-item">
+                        <div class="position-label label-x">X</div>
+                        <div class="position-value value-x" id="pos-x">---</div>
+                        <div class="position-unit" id="unit-x">mm</div>
+                    </div>
+                    <div class="position-item">
+                        <div class="position-label label-y">Y</div>
+                        <div class="position-value value-y" id="pos-y">---</div>
+                        <div class="position-unit" id="unit-y">mm</div>
+                    </div>
+                    <div class="position-item">
+                        <div class="position-label label-z">Z</div>
+                        <div class="position-value value-z" id="pos-z">---</div>
+                        <div class="position-unit" id="unit-z">mm</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Joint Angles -->
+            <div class="data-section">
+                <h3>Joint Angles</h3>
+                <div class="angles-grid">
+                    <div class="angle-item">
+                        <span class="angle-label">θ1 (Base):</span>
+                        <span class="angle-value" id="angle-1">---</span>
+                    </div>
+                    <div class="angle-item">
+                        <span class="angle-label">θ2 (Shoulder):</span>
+                        <span class="angle-value" id="angle-2">---</span>
+                    </div>
+                    <div class="angle-item">
+                        <span class="angle-label">θ3 (Elbow):</span>
+                        <span class="angle-value" id="angle-3">---</span>
+                    </div>
+                    <div class="angle-item">
+                        <span class="angle-label">θ4 (Wrist):</span>
+                        <span class="angle-value" id="angle-4">---</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Captured Points List -->
+            <div class="data-section points-section">
+                <h3>Captured Points</h3>
+                <div class="points-list" id="points-list">
+                    <div class="points-list-header">
+                        <span class="col-num">#</span>
+                        <span class="col-type">Type</span>
+                        <span class="col-coord header-x">X</span>
+                        <span class="col-coord header-y">Y</span>
+                        <span class="col-coord header-z">Z</span>
+                        <span class="col-action">Action</span>
+                    </div>
+                    <div class="empty-state">
+                        No points captured yet. Start recording to begin.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geometry Results -->
+            <div class="data-section">
+                <h3>Geometry Results</h3>
+                <div id="geometry-results" class="geometry-results"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL -->
+        <div class="right-panel">
+            <!-- Top Section: 3D Visualization -->
+            <div class="right-panel-top">
+                <div class="data-section viewer-section">
+                    <h3>3D Visualization</h3>
+                    <div class="viewer-controls">
+                        <button id="home-view-btn" class="btn btn-secondary" title="Reset camera view">
+                            🏠
+                        </button>
+                        <button id="screenshot-btn" class="btn btn-secondary" title="Save screenshot">
+                            📷
+                        </button>
+                    </div>
+                    <div id="three-viewer-container" class="three-viewer-container"></div>
+                </div>
+            </div>
+
+            <!-- Vertical Resizer -->
+            <div class="vertical-resizer"></div>
+
+            <!-- Bottom Section: Status Log -->
+            <div class="right-panel-bottom">
+                <div class="data-section log-section">
+                    <h3>Status Log</h3>
+                    <div class="log-display" id="status-log">
+                        <div class="log-entry">Application started</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instruction Bar (Full Width) -->
+    <div class="instruction-bar" id="instruction-bar">
+        <span class="instruction-text" id="instruction-text">To get started, connect to hardware or simulator</span>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Settings</h2>
+                <span class="close-modal" id="close-settings-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="settings-section">
+                    <h3>Display Units</h3>
+                    <label>
+                        <input type="radio" name="units" value="mm" checked> Millimeters (mm)
+                    </label>
+                    <label>
+                        <input type="radio" name="units" value="inches"> Inches (in)
+                    </label>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Arduino Configuration</h3>
+                    <label>Encoder PPR:</label>
+                    <input type="number" id="encoder-ppr-input" value="600" min="100" max="10000">
+                    <button id="send-ppr-btn" class="btn btn-secondary">Send to Arduino</button>
+                </div>
+
+                <div class="settings-section">
+                    <h3>Link Dimensions (mm)</h3>
+                    <div class="dimension-inputs">
+                        <label>Link 1: <input type="number" id="link1-input" value="254" step="0.1"></label>
+                        <label>Link 2: <input type="number" id="link2-input" value="254" step="0.1"></label>
+                        <label>Link 3: <input type="number" id="link3-input" value="254" step="0.1"></label>
+                        <label>Link 4: <input type="number" id="link4-input" value="35" step="0.1"></label>
+                    </div>
+                    <button id="send-dimensions-btn" class="btn btn-secondary">Send to Arduino</button>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button id="save-settings-btn" class="btn btn-primary">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOOL MANAGEMENT MODAL -->
+    <div id="tool-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Tool Library</h2>
+                <span class="close-modal" id="close-tool-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="tool-list" id="tool-list"></div>
+                <div class="add-tool-section">
+                    <h3>Add New Tool</h3>
+                    <label>Tool Name: <input type="text" id="new-tool-name" placeholder="e.g., Ball Probe 5mm"></label>
+                    <label>X Offset (mm): <input type="number" id="new-tool-x" value="0" step="0.1"></label>
+                    <label>Y Offset (mm): <input type="number" id="new-tool-y" value="0" step="0.1"></label>
+                    <label>Z Offset (mm): <input type="number" id="new-tool-z" value="0" step="0.1"></label>
+                    <button id="add-tool-btn" class="btn btn-primary">Add Tool</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+
+</html>

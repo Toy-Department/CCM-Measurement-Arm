@@ -1,0 +1,928 @@
+/*
+ * ============================================================================
+ * CCM DIGITIZING ARM - STYLES v1.0.0
+ * ============================================================================
+ */
+
+/* --- GLOBAL RESET & BASE --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    /* Use a standard, clean system font for professionalism and readability */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f0f0;
+    /* Light industrial grey background */
+    color: #333;
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* --- TOP BAR (Header) --- */
+.top-bar {
+    /* Solid dark color for authority and professionalism */
+    background: #2c3e50;
+    /* Deep Slate Blue */
+    color: white;
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+    height: 60px;
+}
+
+.app-status-panel {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.app-status-text {
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+    padding: 5px 15px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+}
+
+.app-status-text.recording {
+    background: #e74c3c;
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+    animation: pulse-red 2s infinite;
+}
+
+.app-status-text.paused {
+    background: #f39c12;
+    color: #2c3e50;
+}
+
+@keyframes pulse-red {
+    0% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 10px rgba(231, 76, 60, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+    }
+}
+
+.connection-panel {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.port-dropdown {
+    padding: 6px 10px;
+    border: 1px solid #7f8c8d;
+    border-radius: 4px;
+    font-size: 13px;
+    min-width: 150px;
+    transition: all 0.2s ease;
+}
+
+/* Focus state for accessibility and professionalism */
+.port-dropdown:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.5);
+}
+
+.status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #c0392b;
+    /* Muted Red */
+}
+
+.status-dot.connected {
+    background: #27ae60;
+    /* Muted Green */
+}
+
+/* --- BUTTONS & INTERACTION FEEDBACK --- */
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.5);
+    /* Prominent focus ring */
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-primary {
+    background: #007bff;
+    color: white;
+}
+
+.btn-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-warning {
+    background: #ffc107;
+    color: #333;
+}
+
+.btn-danger {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-point {
+    background: #17a2b8;
+    color: white;
+    padding: 12px 16px;
+}
+
+/* Temporary Success Feedback (Applies via JS) */
+.btn.btn-acknowledged {
+    background: #2ecc71 !important;
+    /* Force success color */
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    transition: background 0.1s;
+}
+
+/* --- MAIN LAYOUT & PANELS --- */
+.main-container {
+    display: flex;
+    height: calc(100vh - 60px - 22px);
+    /* 60px header + 22px instruction bar */
+    overflow: hidden;
+    position: relative;
+}
+
+.left-panel,
+.center-panel,
+.right-panel {
+    background: white;
+    padding: 20px;
+    box-shadow: none;
+    border-right: 1px solid #e0e0e0;
+    overflow-y: auto;
+    position: relative;
+}
+
+.left-panel {
+    width: 280px;
+    min-width: 200px;
+    max-width: 400px;
+    /* Hide scrollbar while maintaining scroll functionality */
+    scrollbar-width: none;
+    /* Firefox */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+}
+
+.left-panel::-webkit-scrollbar {
+    display: none;
+    /* Chrome, Safari, Opera */
+}
+
+/* 🎯 CENTER PANEL FIX: Set to flex column to manage vertical content flow */
+.center-panel {
+    flex: 1;
+    border-right: none;
+    display: flex;
+    flex-direction: column;
+}
+
+.right-panel {
+    width: 300px;
+    min-width: 250px;
+    max-width: 500px;
+    border-left: 1px solid #e0e0e0;
+    border-right: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+}
+
+.center-panel>h2,
+.right-panel>h2 {
+    font-size: 18px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #007bff;
+    margin-bottom: 15px;
+}
+
+/* Right Panel Vertical Split */
+.right-panel-top,
+.right-panel-bottom {
+    overflow-y: auto;
+    padding: 20px;
+    position: relative;
+}
+
+.right-panel-top {
+    flex: 1;
+    min-height: 200px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.right-panel-bottom {
+    flex: 1;
+    min-height: 150px;
+}
+
+/* Vertical Resizer */
+.vertical-resizer {
+    height: 4px;
+    background: #e0e0e0;
+    cursor: ns-resize;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+
+.vertical-resizer:hover {
+    background: #007bff;
+}
+
+.vertical-resizer::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 8px;
+    background: transparent;
+}
+
+.points-list-header {
+    display: flex;
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+    background: #f9f9f9;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.points-list {
+    border: 1px solid #e0e0e0;
+    border-top: none;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    max-height: 400px;
+    overflow-y: auto;
+    position: relative;
+}
+
+.col-num,
+.point-num {
+    width: 40px;
+    flex-shrink: 0;
+}
+
+.col-type,
+.point-type {
+    width: 80px;
+    flex-shrink: 0;
+}
+
+.col-action,
+.point-delete {
+    width: 50px;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.points-list-header .col-coord {
+    flex: 1;
+    text-align: center;
+}
+
+.points-list-header .header-x {
+    color: #ff0000;
+    font-weight: 700;
+}
+
+.points-list-header .header-y {
+    color: #00aa00;
+    font-weight: 700;
+}
+
+.points-list-header .header-z {
+    color: #0000ff;
+    font-weight: 700;
+}
+
+.points-list .point-row {
+    display: flex;
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    align-items: center;
+    font-size: 13px;
+}
+
+.points-list .point-row:last-child {
+    border-bottom: none;
+}
+
+.points-list .point-coord {
+    flex: 1;
+    text-align: center;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-weight: 400;
+}
+
+/* Colors for point coordinates are handled by global .value-x, .value-y, .value-z classes */
+
+/* --- JOINT ANGLES GRID --- */
+.angles-grid {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.angle-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+    min-width: 100px;
+}
+
+.angle-label {
+    font-size: 12px;
+    color: #bdc3c7;
+    font-weight: 500;
+}
+
+.angle-value {
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: #000000;
+}
+
+/* --- INSTRUCTION BAR (Full Width Bottom) --- */
+.instruction-bar {
+    background: #ffffff;
+    color: #333333;
+    padding: 3px 20px;
+    border-top: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.instruction-icon {
+    display: none;
+}
+
+.instruction-text {
+    color: #333333;
+    flex: 1;
+}
+
+/* --- RESIZABLE PANELS --- */
+.resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 7px;
+    background: transparent;
+    cursor: col-resize;
+    z-index: 10;
+    transition: background 0.2s;
+}
+
+.resize-handle:hover,
+.resize-handle.resizing {
+    background: rgba(0, 123, 255, 0.1);
+}
+
+.resize-handle-left {
+    right: -3.5px;
+}
+
+.resize-handle-right {
+    left: -3.5px;
+}
+
+.resize-handle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 40px;
+    background: #007bff;
+    border-radius: 1px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.resize-handle:hover::after,
+.resize-handle.resizing::after {
+    opacity: 1;
+}
+
+/* --- POSITION DISPLAY (Crucial Data) --- */
+.position-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.position-item {
+    background: #34495e;
+    /* Dark Slate Grey */
+    padding: 15px;
+    border-radius: 4px;
+    text-align: center;
+    color: white;
+    transition: all 0.5s ease-out;
+}
+
+@keyframes live-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0.4);
+    }
+
+    70% {
+        box-shadow: 0 0 0 5px rgba(46, 204, 113, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(46, 204, 113, 0);
+    }
+}
+
+.position-item.live-update {
+    animation: live-pulse 1s ease-out;
+}
+
+.position-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #bdc3c7;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.position-label.label-x {
+    color: #ff0000;
+    font-weight: 700;
+}
+
+.position-label.label-y {
+    color: #00aa00;
+    font-weight: 700;
+}
+
+.position-label.label-z {
+    color: #0000ff;
+    font-weight: 700;
+}
+
+.position-value {
+    font-size: 30px;
+    font-weight: 700;
+    font-family: 'Consolas', 'Courier New', monospace;
+    /* Default color removed, handled by specific classes */
+}
+
+.value-x {
+    color: #ff0000;
+}
+
+.value-y {
+    color: #00aa00;
+}
+
+.value-z {
+    color: #0000ff;
+}
+
+.position-item .unit {
+    font-size: 10px;
+    color: #bdc3c7;
+    margin-top: 3px;
+    display: block;
+}
+
+/* --- 3D VIEWER STYLES --- */
+.viewer-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    height: 100%;
+}
+
+.viewer-section h3 {
+    margin: 0 0 10px 0;
+    flex-shrink: 0;
+}
+
+.viewer-controls {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+}
+
+.viewer-controls .btn {
+    white-space: nowrap;
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+.three-viewer-container {
+    flex: 1;
+    background: #1a1a1a;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    min-height: 200px;
+}
+
+.three-viewer-container canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.log-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+}
+
+/* Adjust media queries to new fixed height strategy */
+@media (max-width: 1400px) {
+    .three-viewer {
+        height: 350px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .three-viewer {
+        height: 300px;
+    }
+}
+
+
+/* Legacy grid styles removed to favor flexbox implementation above */
+
+/* Monospace for coordinates in list */
+.point-row span:nth-child(3),
+.point-row span:nth-child(4),
+.point-row span:nth-child(5) {
+    font-family: 'Consolas', monospace;
+    font-size: 12px;
+    color: #34495e;
+    /* Darker color for precision */
+}
+
+/* --- MODAL --- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.modal.show {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 6px;
+    width: 90%;
+    max-width: 550px;
+    max-height: 80vh;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.close-modal {
+    font-size: 24px;
+    cursor: pointer;
+    color: #95a5a6;
+}
+
+.close-modal:hover {
+    color: #dc3545;
+}
+
+/* --- General Input Focus State --- */
+input[type="text"],
+input[type="number"],
+select {
+    border: 1px solid #ccc;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: border-color 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.15);
+}
+
+/* ============================================================================
+ * CONTROL SECTION ENHANCEMENTS
+ * ============================================================================ */
+
+/* Disabled State Clarity for Control Sections (Applies via JS) */
+.control-section.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    /* Prevents interaction */
+}
+
+/* --- Control Section Spacing Improvement --- */
+.control-section {
+    margin-bottom: 8px;
+    padding-bottom: 5px;
+}
+
+.control-section h3 {
+    margin-bottom: 10px;
+    font-size: 0.75rem;
+    color: #666;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* --- Vertical Group Spacing Improvement (For CTAs) --- */
+.button-group-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.recording-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 5px;
+}
+
+/* Neutralize Zero Encoders button */
+.btn-warning {
+    background: #f8f9fa;
+    color: #666;
+    border: 1px solid #ddd;
+}
+
+.btn-warning:hover {
+    background: #e9ecef;
+    color: #333;
+    border-color: #ccc;
+}
+
+/* Keep Pause button yellow/orange since it uses btn-warning too, or create a specific class for it? 
+   Actually, let's check if Pause uses btn-warning. Yes it does.
+   We should probably separate them. But for now, let's override btn-warning generally as requested for "Zero Encoders", 
+   and we might need to fix the Pause button if it looks too plain.
+   
+   Wait, "Zero Encoders" is the only one we want to neutralize. 
+   The Pause button should probably stay distinct.
+   Let's target the specific ID for Zero Encoders to be safe, or create a new class.
+   But I can't easily change the HTML class for Zero Encoders without another edit.
+   
+   Let's look at index.html again.
+   Zero Encoders uses id="zero-btn" class="btn btn-warning".
+   Pause uses id="pause-recording-btn" class="btn btn-warning".
+   
+   If I change .btn-warning, I change Pause too.
+   Better to target #zero-btn specifically to override.
+*/
+
+#zero-btn {
+    background: #fff;
+    color: #666;
+    border: 1px solid #ccc;
+}
+
+#zero-btn:hover {
+    background: #f0f0f0;
+    color: #333;
+    border-color: #bbb;
+}
+
+.button-group-vertical .btn {
+    width: 100%;
+    min-height: 38px;
+}
+
+/* --- Horizontal Group for Side-by-Side Buttons --- */
+.button-group-horizontal {
+    display: flex;
+    gap: 12px;
+}
+
+.button-group-horizontal .btn {
+    flex: 1;
+    min-height: 38px;
+}
+
+/* --- Live Recording Specifics --- */
+.live-recording-controls {
+    background: rgba(0, 123, 255, 0.05);
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.frequency-control {
+    margin-bottom: 15px;
+}
+
+/* --- Tool Selection Enhancement --- */
+.tool-selection-control select {
+    border: 2px solid #6c757d;
+    /* Darker border for importance */
+    font-weight: 500;
+}
+
+/* ============================================================================
+ * GEOMETRY AND LOGS
+ * ============================================================================ */
+
+/* Geometry Control Sections (Panel Visibility Transition) */
+#circle-controls,
+#plane-controls,
+#line-controls {
+    background: rgba(0, 123, 255, 0.05);
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    padding: 15px;
+    transition: opacity 0.3s ease;
+    /* Smooth fade-in/out */
+}
+
+/* Example class for hiding geometry controls */
+.geometry-controls-hidden {
+    opacity: 0;
+    height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    overflow: hidden;
+    border: 1px solid transparent !important;
+}
+
+/* --- Geometry Mode Selector --- */
+.geometry-dropdown {
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    padding: 10px;
+    width: 100%;
+    font-weight: 600;
+    background: white;
+    cursor: pointer;
+}
+
+/* --- Log Entry Types with Status Icons (Standardized Display) --- */
+.log-entry {
+    font-size: 12px;
+    font-family: 'Consolas', monospace;
+    /* Monospace for technical log feel */
+    line-height: 1.5;
+    padding: 2px 0;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.log-entry.success {
+    color: #28a745;
+}
+
+.log-entry.error {
+    color: #dc3545;
+}
+
+.log-entry.warning {
+    color: #ffc107;
+}
+
+.log-entry.info {
+    color: #17a2b8;
+}
+
+/* Adding icons via pseudo-elements for clarity */
+.log-entry.error::before {
+    content: '❌ ';
+}
+
+.log-entry.warning::before {
+    content: '⚠️ ';
+}
+
+.log-entry.info::before {
+    content: 'ℹ️ ';
+}
+
+.log-entry.success::before {
+    content: '✅ ';
+}
+
+
+/* --- RESPONSIVE ADJUSTMENTS --- */
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+    }
+
+    .left-panel,
+    .right-panel {
+        width: 100%;
+        max-width: none;
+    }
+
+    .resize-handle {
+        display: none;
+    }
+}
